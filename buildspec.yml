@@ -10,19 +10,20 @@ phases:
   install:
     runtime-versions:
       python: 3.11
+    commands:
+      - echo "Logging into Docker Hub..."
+      - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
 
   pre_build:
     commands:
-      - echo "Installing Python dependencies..."
+      - echo "Installing dependencies..."
       - pip install -r requirements.txt
 
   build:
     commands:
       - echo "Building Docker image..."
       - docker build -t "$DOCKER_URL/$DOCKER_USERNAME/codebuild-py-app:latest" .
-      - echo "Logging into Docker registry..."
-      - echo "$DOCKER_PASSWORD" | docker login "$DOCKER_URL" -u "$DOCKER_USERNAME" --password-stdin
-      - echo "Pushing Docker image..."
+      - echo "Pushing image to registry..."
       - docker push "$DOCKER_URL/$DOCKER_USERNAME/codebuild-py-app:latest"
 
   post_build:
