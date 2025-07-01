@@ -1,0 +1,34 @@
+version: 0.2
+
+env:
+  parameter-store:
+    DOCKER_USERNAME: /pyapp/docker-credential/username
+    DOCKER_PASSWORD: /pyapp/docker-credential/password
+    DOCKER_URL: /pyapp/docker-registry/docker_url
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.11
+
+  pre_build:
+    commands:
+      - echo "Installing Python dependencies..."
+      - pip install -r requirements.txt
+
+  build:
+    commands:
+      - echo "Building Docker image..."
+      - docker build -t "$DOCKER_URL/$DOCKER_USERNAME/codebuild-py-app:latest" .
+      - echo "Logging into Docker registry..."
+      - echo "$DOCKER_PASSWORD" | docker login "$DOCKER_URL" -u "$DOCKER_USERNAME" --password-stdin
+      - echo "Pushing Docker image..."
+      - docker push "$DOCKER_URL/$DOCKER_USERNAME/codebuild-py-app:latest"
+
+  post_build:
+    commands:
+      - echo "Build completed successfully."
+
+artifacts:
+  files:
+    - '**/*'
